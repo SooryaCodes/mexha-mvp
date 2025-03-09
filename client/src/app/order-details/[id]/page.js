@@ -194,11 +194,9 @@ export default function OrderDetails() {
                 {orderData.items.map((item) => (
                   <li key={item.idMeal} className="py-3 flex justify-between">
                     <div className="flex items-center">
-                      <Image 
+                      <img 
                         src={item.strMealThumb} 
                         alt={item.strMeal} 
-                        width={48}
-                        height={48}
                         className="w-12 h-12 object-cover rounded-md mr-3"
                       />
                       <div>
