@@ -59,41 +59,43 @@ export default function OrderDetails() {
   };
   
   useEffect(() => {
-    
-    const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-    const foundOrder = orderHistory.find(order => order.orderId.toString() === orderId);
-    
-    if (foundOrder) {
-      setOrderData(foundOrder);
-      setLoading(false);
-    } else {
-      // Create mock data if not found
-      setTimeout(() => {
-        setOrderData({
-          orderId,
-          items: items.length > 0 ? items : [
-            {
-              idMeal: "52874",
-              strMeal: "Beef and Mustard Pie",
-              strMealThumb: "https://www.themealdb.com/images/media/meals/sytuqu1511553755.jpg",
-              price: "12.99",
-              quantity: 1
-            },
-            {
-              idMeal: "52927",
-              strMeal: "Caesar Salad",
-              strMealThumb: "https://www.themealdb.com/images/media/meals/qxuqtt1511724269.jpg",
-              price: "8.99",
-              quantity: 1
-            }
-          ],
-          date: new Date().toISOString(),
-          total: items.length > 0 
-            ? items.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0).toFixed(2)
-            : "21.98"
-        });
+    // Add a check to ensure we're in the browser environment before accessing localStorage
+    if (typeof window !== 'undefined') {
+      const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+      const foundOrder = orderHistory.find(order => order.orderId.toString() === orderId);
+      
+      if (foundOrder) {
+        setOrderData(foundOrder);
         setLoading(false);
-      }, 1000);
+      } else {
+        // Create mock data if not found
+        setTimeout(() => {
+          setOrderData({
+            orderId,
+            items: items.length > 0 ? items : [
+              {
+                idMeal: "52874",
+                strMeal: "Beef and Mustard Pie",
+                strMealThumb: "https://www.themealdb.com/images/media/meals/sytuqu1511553755.jpg",
+                price: "12.99",
+                quantity: 1
+              },
+              {
+                idMeal: "52927",
+                strMeal: "Caesar Salad",
+                strMealThumb: "https://www.themealdb.com/images/media/meals/qxuqtt1511724269.jpg",
+                price: "8.99",
+                quantity: 1
+              }
+            ],
+            date: new Date().toISOString(),
+            total: items.length > 0 
+              ? items.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0).toFixed(2)
+              : "21.98"
+          });
+          setLoading(false);
+        }, 1000);
+      }
     }
   }, [orderId, items]);
 

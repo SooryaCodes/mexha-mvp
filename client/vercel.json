@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/api/serverless" }
+  ]
+}
