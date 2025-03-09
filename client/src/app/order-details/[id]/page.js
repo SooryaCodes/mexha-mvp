@@ -46,12 +46,9 @@ export default function OrderDetails() {
     ));
   };
   
-  // Submit additional requests
   const submitAdditionalRequests = () => {
-    // In a real app, you would send this to your backend
     alert("Your additional requests have been submitted!");
     
-    // For demo purposes, we&apos;ll just update the local state
     const selectedItems = additionalItems.filter(item => item.selected);
     setOrderData({
       ...orderData,
@@ -61,12 +58,8 @@ export default function OrderDetails() {
     });
   };
   
-  // Fetch order data
   useEffect(() => {
-    // In a real app, you would fetch this from your API
-    // For demo purposes, we&apos;ll create mock data or use localStorage
     
-    // Try to get from localStorage first
     const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
     const foundOrder = orderHistory.find(order => order.orderId.toString() === orderId);
     
