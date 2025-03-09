@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
+import Image from "next/image";
 
 export default function OrderDetails() {
   const params = useParams();
@@ -50,7 +51,7 @@ export default function OrderDetails() {
     // In a real app, you would send this to your backend
     alert("Your additional requests have been submitted!");
     
-    // For demo purposes, we'll just update the local state
+    // For demo purposes, we&apos;ll just update the local state
     const selectedItems = additionalItems.filter(item => item.selected);
     setOrderData({
       ...orderData,
@@ -63,7 +64,7 @@ export default function OrderDetails() {
   // Fetch order data
   useEffect(() => {
     // In a real app, you would fetch this from your API
-    // For demo purposes, we'll create mock data or use localStorage
+    // For demo purposes, we&apos;ll create mock data or use localStorage
     
     // Try to get from localStorage first
     const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
@@ -193,9 +194,11 @@ export default function OrderDetails() {
                 {orderData.items.map((item) => (
                   <li key={item.idMeal} className="py-3 flex justify-between">
                     <div className="flex items-center">
-                      <img 
+                      <Image 
                         src={item.strMealThumb} 
                         alt={item.strMeal} 
+                        width={48}
+                        height={48}
                         className="w-12 h-12 object-cover rounded-md mr-3"
                       />
                       <div>
@@ -345,7 +348,7 @@ export default function OrderDetails() {
             <div className="p-4">
               <div className="mb-4">
                 <p className="text-gray-700 mb-2">
-                  Based on your order, here's a nutritional breakdown and health insights:
+                  Based on your order, here&apos;s a nutritional breakdown and health insights:
                 </p>
               </div>
               
