@@ -26,7 +26,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ toast, dismiss }}>
       {children}
-      <div className="fixed bottom-0 right-0 p-4 w-full md:max-w-sm z-50 flex flex-col gap-2">
+      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 p-4 w-full max-w-full md:max-w-sm z-50 flex flex-col gap-2 pointer-events-none overflow-hidden">
         <AnimatePresence>
           {toasts.map((toast) => (
             <Toast
@@ -49,13 +49,13 @@ function Toast({ id, title, description, onDismiss }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 flex items-start gap-3"
+      className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 flex items-start gap-3 pointer-events-auto max-w-full overflow-hidden"
     >
-      <div className="flex-1">
-        {title && <h3 className="font-medium text-gray-900">{title}</h3>}
-        {description && <p className="text-sm text-gray-500">{description}</p>}
+      <div className="flex-1 min-w-0">
+        {title && <h3 className="font-medium text-gray-900 truncate">{title}</h3>}
+        {description && <p className="text-sm text-gray-500 break-words">{description}</p>}
       </div>
-      <button onClick={onDismiss} className="text-gray-400 hover:text-gray-500">
+      <button onClick={onDismiss} className="text-gray-400 hover:text-gray-500 flex-shrink-0">
         <X size={16} />
       </button>
     </motion.div>
