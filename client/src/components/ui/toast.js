@@ -4,6 +4,7 @@ import * as React from "react";
 import { createContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import Image from 'next/image';
 
 export const ToastContext = createContext(null);
 

@@ -4,8 +4,20 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
 import Cart from "@/components/Cart";
+import { useEffect } from "react";
+import { ShoppingBag } from "lucide-react";
 
 export default function AppHeader({ userProfile, showUserMenu, setShowUserMenu, resetTableSelection, scrolled }) {
+  const { isCartOpen, openCart, closeCart } = useCart();
+  
+  // Effect to handle cart open state from context
+  useEffect(() => {
+    const sheetTriggerRef = document.getElementById('cart-sheet-trigger');
+    if (isCartOpen && sheetTriggerRef) {
+      sheetTriggerRef.click();
+    }
+  }, [isCartOpen]);
+  
   return (
     <header className={`sticky top-0 z-30 backdrop-blur-md bg-rose-600 border-b border-rose-500/50 transition-all duration-300 ${scrolled ? 'shadow-lg shadow-rose-500/10' : ''}`}>
       <div className="container mx-auto py-4 px-4">
@@ -47,16 +59,18 @@ export default function AppHeader({ userProfile, showUserMenu, setShowUserMenu, 
               {userProfile.name}
             </Button>
             
-            <Sheet>
+            <Sheet onOpenChange={(open) => !open && closeCart()}>
               <SheetTrigger asChild>
                 <Button 
+                  id="cart-sheet-trigger"
                   variant="outline" 
                   className="relative bg-rose-500/50 border-rose-400/50 hover:bg-rose-400/50 hover:border-rose-300/50 text-white transition-all duration-300"
+                  onClick={openCart}
                 >
                   <CartSummary />
                 </Button>
               </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-md border-l border-rose-500/50 bg-rose-600/95 backdrop-blur-md">
+              <SheetContent className="w-full sm:max-w-md border-l border-rose-100 bg-white">
                 <Cart />
               </SheetContent>
             </Sheet>
@@ -67,27 +81,23 @@ export default function AppHeader({ userProfile, showUserMenu, setShowUserMenu, 
   );
 }
 
-// Cart summary component with item count badge
+// Enhanced Cart summary component with item count badge
 function CartSummary() {
   const { items } = useCart();
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);
   
   return (
     <>
-      <span className="mr-2">Cart</span>
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="9" cy="21" r="1"></circle>
-        <circle cx="20" cy="21" r="1"></circle>
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-      </svg>
+      <ShoppingBag className="mr-2" size={18} />
+      <span>Cart</span>
       {itemCount > 0 && (
-        <motion.span 
+        <motion.div 
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           className="absolute -top-2 -right-2 bg-gradient-to-r from-rose-400 to-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
         >
           {itemCount}
-        </motion.span>
+        </motion.div>
       )}
     </>
   );

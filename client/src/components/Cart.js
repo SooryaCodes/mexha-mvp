@@ -6,18 +6,24 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { X, Plus, Minus, ShoppingBag, ChevronRight } from "lucide-react";
 
 export default function Cart() {
-  const { items, updateItemQuantity, removeItem, clearCart } = useCart();
+  const { items, updateItemQuantity, removeItem, clearCart, closeCart } = useCart();
   const [checkoutStep, setCheckoutStep] = useState(0);
   const [isUpdating, setIsUpdating] = useState(null);
   const [suggestedItems, setSuggestedItems] = useState([]);
   const router = useRouter();
   
-  const totalPrice = items.reduce(
-    (total, item) => total + parseFloat(item.price) * item.quantity,
-    0
-  ).toFixed(2);
+  // Calculate subtotal, tax, and total
+  const subtotal = items.reduce(
+    (total, item) => total + parseFloat(item.price) * item.quantity, 0
+  );
+  const tax = subtotal * 0.08; // 8% tax
+  const deliveryFee = subtotal > 0 ? 2.99 : 0;
+  const totalPrice = (subtotal + tax + deliveryFee).toFixed(2);
 
   const handleQuantityChange = (id, newQuantity) => {
     setIsUpdating(id);
@@ -214,10 +220,84 @@ export default function Cart() {
     }
   };
 
+  // Enhanced cart item component
+  const CartItem = ({ item }) => (
+    <motion.div 
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="flex items-center p-3 mb-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
+    >
+      <div className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0">
+        <img 
+          src={item.strMealThumb} 
+          alt={item.strMeal} 
+          className="h-full w-full object-cover"
+        />
+      </div>
+      
+      <div className="ml-3 flex-grow">
+        <div className="flex justify-between">
+          <h3 className="font-medium text-gray-800">{item.strMeal}</h3>
+          <button 
+            onClick={() => removeItem(item.idMeal)}
+            className="text-gray-400 hover:text-rose-500 transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+        
+        <div className="text-rose-600 font-medium mt-1">
+          ${parseFloat(item.price).toFixed(2)}
+        </div>
+        
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
+            <button 
+              onClick={() => handleQuantityChange(item.idMeal, item.quantity - 1)}
+              className="px-2 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600"
+              disabled={isUpdating === item.idMeal}
+            >
+              <Minus size={14} />
+            </button>
+            
+            <span className="px-3 font-medium text-gray-800">
+              {isUpdating === item.idMeal ? "..." : item.quantity}
+            </span>
+            
+            <button 
+              onClick={() => handleQuantityChange(item.idMeal, item.quantity + 1)}
+              className="px-2 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600"
+              disabled={isUpdating === item.idMeal}
+            >
+              <Plus size={14} />
+            </button>
+          </div>
+          
+          <div className="font-medium text-gray-800">
+            ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+
   return (
     <div className="h-full flex flex-col bg-white text-black">
-      <SheetHeader className="mb-4">
-        <SheetTitle className="text-rose-600">Your Order</SheetTitle>
+      <SheetHeader className="mb-4 sticky top-0 z-10 bg-white pb-2 border-b">
+        <div className="flex justify-between items-center">
+          <SheetTitle className="text-rose-600 flex items-center">
+            <ShoppingBag className="mr-2" size={20} />
+            Your Order
+          </SheetTitle>
+          <button 
+            onClick={closeCart}
+            className="rounded-full p-1 hover:bg-gray-100 transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
         <SheetDescription className="text-gray-700">
           {items.length === 0 
             ? "Your cart is empty" 
@@ -232,222 +312,87 @@ export default function Cart() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-1 overflow-auto"
+            className="flex-1 overflow-auto px-1"
           >
             {items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-gray-500 bg-white">
+              <div className="flex flex-col items-center justify-center h-64 text-gray-500">
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                  className="bg-gray-50 p-6 rounded-full"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="9" cy="21" r="1"></circle>
-                    <circle cx="20" cy="21" r="1"></circle>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                  </svg>
+                  <ShoppingBag size={48} className="text-gray-300" />
                 </motion.div>
-                <p className="mt-4 text-gray-700">Add some delicious items to your cart</p>
+                <p className="mt-4 text-gray-700 font-medium">Your cart is empty</p>
+                <p className="text-gray-500 text-sm text-center mt-2">
+                  Add some delicious items to get started
+                </p>
+                <Button 
+                  onClick={closeCart}
+                  className="mt-4 bg-rose-500 hover:bg-rose-600 text-white"
+                >
+                  Browse Menu
+                </Button>
               </div>
             ) : (
               <>
-                <ul className="space-y-4">
-                  {items.map((item) => (
-                    <motion.li 
-                      key={item.idMeal}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      className={`flex items-center p-3 border border-gray-200 rounded-lg bg-white hover:shadow-md transition-all duration-300 ${
-                        isUpdating === item.idMeal ? 'border-rose-300 bg-rose-50' : ''
-                      }`}
-                    >
-                      <img 
-                        src={item.strMealThumb} 
-                        alt={item.strMeal} 
-                        className="w-16 h-16 object-cover rounded-md mr-3"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{item.strMeal}</h4>
-                        <div className="flex items-center">
-                          <p className="text-rose-600 font-medium">${item.price}</p>
-                          {/* Show "AI Recommended" badge if this was from recommendations */}
-                          {item.matchScore && (
-                            <span className="ml-2 px-1.5 py-0.5 text-xs bg-rose-100 text-rose-700 rounded-full">
-                              AI Recommended
-                            </span>
-                          )}
-                          {/* Show tag if available */}
-                          {item.tag && (
-                            <span className="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
-                              {item.tag}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          className="h-8 w-8 rounded-full bg-white text-black border-gray-300"
-                          onClick={() => handleQuantityChange(item.idMeal, item.quantity - 1)}
-                          disabled={isUpdating === item.idMeal}
-                        >
-                          -
-                        </Button>
-                        <span className="w-6 text-center font-medium">
-                          {isUpdating === item.idMeal ? (
-                            <motion.span
-                              initial={{ opacity: 0.5 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ repeat: Infinity, duration: 0.5 }}
-                            >
-                              {item.quantity}
-                            </motion.span>
-                          ) : (
-                            item.quantity
-                          )}
-                        </span>
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          className="h-8 w-8 rounded-full"
-                          onClick={() => handleQuantityChange(item.idMeal, item.quantity + 1)}
-                          disabled={isUpdating === item.idMeal}
-                        >
-                          +
-                        </Button>
-                      </div>
-                    </motion.li>
-                  ))}
-                </ul>
+                <div className="space-y-1 mb-4">
+                  <AnimatePresence>
+                    {items.map((item) => (
+                      <CartItem key={item.idMeal} item={item} />
+                    ))}
+                  </AnimatePresence>
+                </div>
                 
-                {/* Enhanced AI-Driven Upselling Section */}
+                {/* Suggested items section */}
                 {suggestedItems.length > 0 && (
                   <div className="mt-6 pt-4 border-t border-gray-100">
                     <h3 className="font-medium text-gray-800 mb-3 flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-rose-500">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                      </svg>
-                      <span className="text-lg">AI Recommendations</span>
-                      <span className="ml-2 px-2 py-0.5 text-xs bg-rose-100 text-rose-700 rounded-full">Personalized</span>
+                      <span className="text-lg">Recommended for You</span>
+                      <Badge className="ml-2 bg-rose-100 text-rose-700 hover:bg-rose-200">
+                        Personalized
+                      </Badge>
                     </h3>
                     
-                    <div className="grid grid-cols-1 gap-3 mt-2">
+                    <div className="grid grid-cols-1 gap-3">
                       {suggestedItems.map((item) => (
                         <motion.div
-                          id={`recommendation-${item.idMeal}`}
                           key={item.idMeal}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                          className="relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-300"
+                          className="flex items-center p-3 bg-rose-50 rounded-lg"
                         >
-                          <div className="absolute top-0 right-0 bg-rose-500 text-white text-xs px-2 py-1 rounded-bl-lg z-10">
-                            {item.matchScore}% match
+                          <div className="h-14 w-14 rounded-md overflow-hidden">
+                            <img 
+                              src={item.strMealThumb} 
+                              alt={item.strMeal} 
+                              className="h-full w-full object-cover"
+                            />
                           </div>
-                          <div className="flex p-3">
-                            <div className="relative w-20 h-20 mr-3">
-                              <img 
-                                src={item.strMealThumb} 
-                                alt={item.strMeal} 
-                                className="w-full h-full object-cover rounded-lg"
-                              />
-                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent h-1/2 rounded-b-lg"></div>
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center mb-1">
-                                <h4 className="font-medium text-gray-900">{item.strMeal}</h4>
-                                <span className="ml-2 px-1.5 py-0.5 text-xs bg-rose-100 text-rose-700 rounded-full">{item.tag}</span>
+                          <div className="ml-3 flex-grow">
+                            <div className="flex justify-between">
+                              <div>
+                                <h4 className="font-medium text-gray-800">{item.strMeal}</h4>
+                                <Badge className="mt-1 bg-rose-100 text-rose-700">
+                                  {item.tag}
+                                </Badge>
                               </div>
-                              <p className="text-sm text-gray-500 mb-2">
-                                {item.type === "dessert" 
-                                  ? "Complete your meal with this delicious dessert" 
-                                  : item.type === "side" 
-                                    ? "Enhance your main course with this perfect side" 
-                                    : "Start your meal right with this appetizer"}
-                              </p>
-                              <div className="flex items-center justify-between">
-                                <span className="text-rose-600 font-medium">${item.price}</span>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className={`text-sm h-8 bg-rose-500 hover:bg-rose-600 text-white rounded-full px-4 transition-all ${
-                                    isUpdating === item.idMeal ? 'opacity-70' : ''
-                                  }`}
-                                  onClick={() => handleAddRecommendation(item)}
-                                  disabled={isUpdating === item.idMeal}
-                                >
-                                  {isUpdating === item.idMeal ? (
-                                    <motion.span
-                                      initial={{ opacity: 0.7 }}
-                                      animate={{ opacity: 1 }}
-                                      transition={{ repeat: Infinity, duration: 0.5 }}
-                                      className="flex items-center"
-                                    >
-                                      Adding...
-                                    </motion.span>
-                                  ) : (
-                                    <>
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                      </svg>
-                                      Add to Order
-                                    </>
-                                  )}
-                                </Button>
+                              <div className="text-rose-600 font-medium">
+                                ${parseFloat(item.price).toFixed(2)}
                               </div>
                             </div>
                           </div>
+                          <Button 
+                            onClick={() => handleAddRecommendation(item)}
+                            size="sm"
+                            className="ml-2 bg-rose-500 hover:bg-rose-600"
+                          >
+                            Add
+                          </Button>
                         </motion.div>
                       ))}
                     </div>
-                    
-                    {/* Enhanced Combo deal suggestion */}
-                    {items.length >= 1 && (
-                      <motion.div
-                        id="combo-deal"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="mt-4 p-4 rounded-xl overflow-hidden relative transition-all duration-300"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-rose-600 opacity-90"></div>
-                        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1')] bg-cover bg-center mix-blend-overlay opacity-20"></div>
-                        
-                        <div className="relative z-10 flex items-center">
-                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mr-4 border border-white/30">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                              <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                            </svg>
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-bold text-white text-lg">Complete Meal Deal</h4>
-                            <p className="text-white/90">Add a side and dessert to your order and save 15%!</p>
-                            
-                            <div className="mt-3 flex space-x-2">
-                              <Button 
-                                className="bg-white text-rose-600 hover:bg-white/90 rounded-full px-4"
-                                onClick={handleAddCombo}
-                              >
-                                Add Combo
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                className="border-white/30 text-white hover:bg-white/20 rounded-full"
-                              >
-                                View Details
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
                   </div>
                 )}
               </>
@@ -553,23 +498,44 @@ export default function Cart() {
         )}
       </AnimatePresence>
 
-      {checkoutStep === 0 && items.length > 0 && (
-        <div className="mt-6 pt-4 border-t">
-          <div className="flex justify-between mb-4">
-            <span className="font-medium">Total</span>
-            <span className="font-bold text-rose-600">${totalPrice}</span>
+      {/* Order summary and checkout button */}
+      {items.length > 0 && (
+        <div className="mt-auto border-t border-gray-100 pt-4 pb-6 px-1 bg-white">
+          <div className="space-y-2 mb-4">
+            <div className="flex justify-between text-gray-600">
+              <span>Subtotal</span>
+              <span>${subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>Tax (8%)</span>
+              <span>${tax.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>Delivery Fee</span>
+              <span>${deliveryFee.toFixed(2)}</span>
+            </div>
+            <Separator className="my-2" />
+            <div className="flex justify-between font-semibold text-gray-900">
+              <span>Total</span>
+              <span>${totalPrice}</span>
+            </div>
           </div>
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
+          
+          <div className="grid grid-cols-2 gap-2">
+            <Button 
+              onClick={clearCart}
+              variant="outline"
+              className="border-rose-200 text-rose-600 hover:bg-rose-50"
+            >
+              Clear Cart
+            </Button>
             <Button 
               onClick={handleCheckout}
-              className="w-full bg-rose-600 hover:bg-rose-700 text-lg py-6  shadow-lg shadow-rose-200"
+              className="bg-rose-500 hover:bg-rose-600 text-white"
             >
-              Proceed to Checkout
+              Checkout <ChevronRight size={16} className="ml-1" />
             </Button>
-          </motion.div>
+          </div>
         </div>
       )}
     </div>

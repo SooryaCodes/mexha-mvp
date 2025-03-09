@@ -14,6 +14,9 @@ export function CartProvider({ children }) {
     return [];
   });
   
+  // Add state for cart sidebar visibility
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  
   // Update localStorage whenever items change
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -35,6 +38,9 @@ export function CartProvider({ children }) {
       
       return [...prevItems, { ...item, quantity: 1 }];
     });
+    
+    // Open cart sidebar when adding items
+    setIsCartOpen(true);
   };
 
   const updateItemQuantity = (id, quantity) => {
@@ -54,6 +60,10 @@ export function CartProvider({ children }) {
     setItems([]);
   };
   
+  // Add functions to control cart visibility
+  const openCart = () => setIsCartOpen(true);
+  const closeCart = () => setIsCartOpen(false);
+  
   // Add a memoized value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
     items,
@@ -61,7 +71,10 @@ export function CartProvider({ children }) {
     updateItemQuantity,
     removeItem,
     clearCart,
-  }), [items]);
+    isCartOpen,
+    openCart,
+    closeCart
+  }), [items, isCartOpen]);
 
   return (
     <CartContext.Provider value={contextValue}>

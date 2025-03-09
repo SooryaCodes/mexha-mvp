@@ -160,7 +160,7 @@ export default function OrderDetails() {
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
           </svg>
           <h2 className="text-xl font-bold text-gray-800 mb-2">Order Not Found</h2>
-          <p className="text-gray-600 mb-4">We couldn't find the order details you're looking for.</p>
+          <p className="text-gray-600 mb-4">We couldn&apos;t find the order details you&apos;re looking for.</p>
           <Button 
             onClick={() => router.push("/")}
             className="bg-rose-600 hover:bg-rose-700"
@@ -385,7 +385,7 @@ export default function OrderDetails() {
             <DialogHeader>
               <DialogTitle>Kitchen Assistance</DialogTitle>
               <DialogDescription>
-                Need something extra with your order? Let us know and we'll help you out.
+                Need something extra with your order? Let us know and we&apos;ll help you out.
               </DialogDescription>
             </DialogHeader>
             
